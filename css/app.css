@@ -29,9 +29,12 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
+html { background: #F4EEF8; }
+html[data-theme="dark"] { background: #14112A; }
+html.t-sunset { background: #2A1A3A; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased; color: var(--text); background: #F4EEF8;
+  -webkit-font-smoothing: antialiased; color: var(--text); background: transparent;
   -webkit-user-select: none; user-select: none; -webkit-text-size-adjust: 100%;
 }
 input, textarea, select { -webkit-user-select: text; user-select: text; }
@@ -41,7 +44,7 @@ button { cursor: pointer; border: 0; background: none; padding: 0; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- фон по времени суток ---------- */
-#bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; transition: background 1.2s; background-size: cover; background-position: center; }
+#bg { position: fixed; top: calc(-1 * env(safe-area-inset-top, 0px) - 60px); left: 0; right: 0; bottom: calc(-1 * env(safe-area-inset-bottom, 0px) - 60px); z-index: 0; overflow: hidden; transition: background 1.2s; background-size: cover; background-position: center; }
 #bg .blob { position: absolute; border-radius: 50%; filter: blur(48px); opacity: .6; transition: background 1.2s; }
 #bg .b1 { width: 70vw; height: 70vw; left: -20vw; top: 22%; }
 #bg .b2 { width: 60vw; height: 60vw; right: -18vw; top: 55%; }
@@ -86,7 +89,14 @@ button { cursor: pointer; border: 0; background: none; padding: 0; }
 .scroll { scrollbar-width: none; } .scroll::-webkit-scrollbar { display: none; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 
-#dock { position: absolute; left: var(--gutter); right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: flex; flex-direction: column; gap: 10px; z-index: 5; }
+#dock { position: absolute; left: var(--gutter); right: var(--gutter); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); display: flex; flex-direction: column; gap: 10px; z-index: 5; transition: bottom .25s; }
+/* открыта клавиатура: капсула поднимается над ней, меню прячется */
+.kb-open #dock { bottom: calc(var(--kb, 0px) + 8px); }
+.kb-open .dock-row { display: none; }
+.kb-open #assist-card { bottom: calc(var(--kb, 0px) + 8px + 52px + 12px); }
+.kb-open #main { padding-bottom: calc(var(--kb, 0px) + 100px); }
+#ask-hint { font-size: 12.5px; color: var(--text2); text-align: center; margin: -4px 0 0; display: none; }
+.kb-open.dictate #ask-hint { display: block; }
 .dock-row { display: flex; gap: 10px; align-items: center; }
 #tabs { flex: 1; height: 60px; border-radius: 30px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); padding: 4px; }
 #tabs button { border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--text2); font-size: 11px; font-weight: 500; transition: background .25s, color .25s; }

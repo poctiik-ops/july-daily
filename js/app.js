@@ -6,7 +6,7 @@ import { S } from './store.js';
 import { openItemEditor, openGoalEditor, openCatEditor, openReview, openReviewView, openScope, closeAllSheets, describeRec, sheetOpen } from './sheets.js';
 import { initAssistant } from './assist.js';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.1';
 
 export const ui = {
   tab: 'cal', view: 'day', cur: today(),
@@ -26,6 +26,9 @@ export function applyTheme() {
   b.classList.remove('t-dawn', 't-day', 't-sunset', 't-night');
   b.classList.add('t-' + t);
   b.dataset.theme = dark ? 'dark' : 'light';
+  const root = document.documentElement;
+  root.dataset.theme = b.dataset.theme;
+  root.classList.toggle('t-sunset', t === 'sunset');
   const photo = st().settings.bg === 'photo' && st().settings.photo;
   b.classList.toggle('has-photo', !!photo);
   $('#bg').style.backgroundImage = photo ? `url("${photo}")` : '';

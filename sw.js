@@ -1,5 +1,5 @@
 // July Daily — service worker: офлайн и обновления
-const VERSION = 'jd-v1.0.0';
+const VERSION = 'jd-v1.0.1';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/util.js', './js/store.js', './js/parser.js', './js/sheets.js', './js/assist.js',

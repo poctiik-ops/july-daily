@@ -16,8 +16,13 @@ export function initAssistant() {
   form.addEventListener('submit', e => { e.preventDefault(); submit(); });
   btn.addEventListener('click', () => {
     if (listening) { stopVoice(); return; }
-    if (input.value.trim()) submit(); else startVoice();
+    if (input.value.trim()) { submit(); return; }
+    // В приложении с экрана «Домой» iOS не даёт сайтам распознавать речь —
+    // открываем клавиатуру, где есть системная диктовка
+    if (useKeyboardDictation()) { document.body.classList.add('dictate'); input.placeholder = 'Говори через 🎙 на клавиатуре…'; input.focus(); return; }
+    startVoice();
   });
+  trackKeyboard();
   card.addEventListener('click', e => {
     const el = e.target.closest('[data-x]'); if (!el) return;
     e.preventDefault();
@@ -38,6 +43,30 @@ function submit() {
   const t = input.value.trim(); if (!t) return;
   input.value = ''; input.blur(); setBtn();
   handle(t);
+}
+
+// ---------- клавиатура ----------
+const isStandalone = () => navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+let srBroken = false;
+function useKeyboardDictation() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  return isStandalone() || !SR || srBroken;
+}
+function trackKeyboard() {
+  const vv = window.visualViewport;
+  const root = document.documentElement, body = document.body;
+  const upd = () => {
+    const kb = vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+    root.style.setProperty('--kb', kb + 'px');
+    const open = document.activeElement === input && (kb > 80 || !vv);
+    body.classList.toggle('kb-open', open);
+    if (open) window.scrollTo(0, 0);
+  };
+  if (vv) { vv.addEventListener('resize', upd); vv.addEventListener('scroll', upd); }
+  input.addEventListener('focus', () => { setTimeout(upd, 60); setTimeout(upd, 350); });
+  input.addEventListener('blur', () => {
+    setTimeout(() => { body.classList.remove('kb-open', 'dictate'); root.style.setProperty('--kb', '0px'); if (!listening) input.placeholder = 'Скажи или напиши…'; }, 50);
+  });
 }
 
 // ---------- голос ----------
@@ -68,8 +97,19 @@ function startVoice() {
       const t = (finalText || input.value).trim();
       if (t) { input.value = ''; setBtn(); handle(t); }
     };
+    let started = false;
+    recog.onstart = () => { started = true; };
+    recog.onaudiostart = () => { started = true; };
     recog.start();
     listening = true; input.value = ''; input.placeholder = 'Слушаю…'; setBtn();
+    // если распознавание молча не запустилось — переключаемся на диктовку клавиатуры
+    setTimeout(() => {
+      if (started || !listening) return;
+      srBroken = true;
+      try { recog.abort(); } catch (_) {}
+      listening = false; setBtn(); input.placeholder = 'Скажи или напиши…';
+      toast('Распознавание речи тут не включилось — нажми на поле и продиктуй через 🎙 на клавиатуре', null, null, 5500);
+    }, 2500);
     hide();
   } catch (e) { listening = false; setBtn(); toast('Не получилось включить микрофон'); }
 }
